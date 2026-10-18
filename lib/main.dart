@@ -31,6 +31,10 @@ class _CartScreenState extends State<CartScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
 
+  // Validation messages shown under the text fields.
+  String? _nameError;
+  String? _priceError;
+
   @override
   void initState() {
     super.initState();
@@ -77,6 +81,38 @@ class _CartScreenState extends State<CartScreen> {
     });
   }
 
+  // Validate the form, then append a new item (still inside setState()).
+  void _addItem() {
+    final String name = _nameController.text.trim();
+    final double? price = double.tryParse(_priceController.text.trim());
+
+    setState(() {
+      _nameError = name.isEmpty ? 'Enter an item name' : null;
+      _priceError = (price == null || price <= 0)
+          ? 'Enter a number greater than 0'
+          : null;
+
+      if (_nameError == null && _priceError == null) {
+        _items.add(CartItem(name: name, price: price!));
+        _nameController.clear();
+        _priceController.clear();
+      }
+    });
+
+    if (_nameError != null || _priceError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fix the errors below.')),
+      );
+    }
+  }
+
+  // Delete every item the user has ticked off.
+  void _clearChecked() {
+    setState(() {
+      _items.removeWhere((item) => item.gotIt);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,6 +145,53 @@ class _CartScreenState extends State<CartScreen> {
                     onToggle: () => _toggle(index),
                   );
                 },
+              ),
+            ),
+            const Divider(height: 1),
+            // Add-item form with inline validation.
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: 'Item name',
+                        errorText: _nameError,
+                      ),
+                      onChanged: (_) => setState(() => _nameError = null),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 110,
+                    child: TextField(
+                      controller: _priceController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Price',
+                        errorText: _priceError,
+                      ),
+                      onChanged: (_) => setState(() => _priceError = null),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(onPressed: _addItem, child: const Text('Add')),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _clearChecked,
+                  icon: const Icon(Icons.delete_sweep),
+                  label: const Text('Clear checked'),
+                ),
               ),
             ),
           ],
