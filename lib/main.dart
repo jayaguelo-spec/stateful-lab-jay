@@ -120,20 +120,10 @@ class _CartScreenState extends State<CartScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Summary bar: updates live because build() re-runs in setState().
-            Container(
-              width: double.infinity,
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Text(
-                'Items: ${_items.length}   Got it: $_gotItCount   '
-                'Total: PHP ${_total.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
             Expanded(
               // Expanded keeps the ListView height bounded inside the Column.
               child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: _items.length,
                 itemBuilder: (context, index) {
                   final item = _items[index];
@@ -147,7 +137,17 @@ class _CartScreenState extends State<CartScreen> {
                 },
               ),
             ),
-            const Divider(height: 1),
+            // Summary bar: updates live because build() re-runs in setState().
+            Container(
+              width: double.infinity,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Text(
+                'Items: ${_items.length}   Got it: $_gotItCount   '
+                'Total: PHP ${_total.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
             // Add-item form with inline validation.
             Padding(
               padding: const EdgeInsets.all(12),
@@ -178,20 +178,29 @@ class _CartScreenState extends State<CartScreen> {
                       onChanged: (_) => setState(() => _priceError = null),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(onPressed: _addItem, child: const Text('Add')),
                 ],
               ),
             ),
+            // Add and Clear checked sit side by side, like the expected screen.
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _clearChecked,
-                  icon: const Icon(Icons.delete_sweep),
-                  label: const Text('Clear checked'),
-                ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _addItem,
+                      child: const Text('Add'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _clearChecked,
+                      icon: const Icon(Icons.delete_sweep),
+                      label: const Text('Clear checked'),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -219,45 +228,50 @@ class CartItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Row(
-        children: [
-          Checkbox(
-            value: item.gotIt,
-            // The parent decides what happens; the tile just reports the tap.
-            onChanged: (_) => onToggle(),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.name,
-                  style: TextStyle(
-                    fontSize: 16,
-                    decoration: item.gotIt ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                Text(
-                  'PHP ${item.price.toStringAsFixed(2)} each',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
+    // Card look matches the rounded tiles in the expected screen.
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Row(
+          children: [
+            Checkbox(
+              value: item.gotIt,
+              // The parent decides what happens; the tile just reports the tap.
+              onChanged: (_) => onToggle(),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.remove),
-            // Quantity can never drop below 1.
-            onPressed: item.quantity > 1 ? onDecrease : null,
-          ),
-          Text('${item.quantity}', style: const TextStyle(fontSize: 16)),
-          IconButton(
-            icon: const Icon(Icons.add),
-            // Quantity can never rise above 99.
-            onPressed: item.quantity < 99 ? onIncrease : null,
-          ),
-        ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      decoration:
+                          item.gotIt ? TextDecoration.lineThrough : null,
+                    ),
+                  ),
+                  Text(
+                    'PHP ${item.price.toStringAsFixed(2)} each',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.remove),
+              // Quantity can never drop below 1.
+              onPressed: item.quantity > 1 ? onDecrease : null,
+            ),
+            Text('${item.quantity}', style: const TextStyle(fontSize: 16)),
+            IconButton(
+              icon: const Icon(Icons.add),
+              // Quantity can never rise above 99.
+              onPressed: item.quantity < 99 ? onIncrease : null,
+            ),
+          ],
+        ),
       ),
     );
   }
