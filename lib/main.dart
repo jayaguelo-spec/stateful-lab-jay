@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MaterialApp(home: CartScreen()));
+void main() => runApp(
+      const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: CartScreen(),
+      ),
+    );
 
 /// One line in the cart. The fields are mutable so the parent
 /// screen can change them inside setState().
