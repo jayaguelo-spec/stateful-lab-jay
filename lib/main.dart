@@ -23,6 +23,12 @@ class CartItem {
   });
 }
 
+// =======================================================================
+// 6) SCREENS -> kung magdugag og laing screen (detail, checkout, login),
+//    hima'g bag-ong class diri sa ubos, o i-separate sa lain nga file
+//    (e.g. lib/item_detail_screen.dart) unya i-import sa ibabaw.
+//    I-register usab ang routes sa MaterialApp(home: ...) kung ganahan.
+// =======================================================================
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
@@ -31,6 +37,11 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  // =====================================================================
+  // 1) STATE VARIABLES -> ibutang dinhi ang mga data ug controllers
+  //    (list, TextEditingController, error messages, selected index, etc.)
+  // =====================================================================
+
   // The single source of truth: the whole cart lives here, in the State.
   final List<CartItem> _items = [];
   final TextEditingController _nameController = TextEditingController();
@@ -39,6 +50,11 @@ class _CartScreenState extends State<CartScreen> {
   // Validation messages shown under the text fields.
   String? _nameError;
   String? _priceError;
+
+  // =====================================================================
+  // 2) LIFECYCLE -> initState() = ibutang dinhi ang una nga buhaton sa
+  //    screen (load data, start timer, listen stream). dispose() = cleanup.
+  // =====================================================================
 
   @override
   void initState() {
@@ -65,6 +81,12 @@ class _CartScreenState extends State<CartScreen> {
 
   /// How many items are already ticked off.
   int get _gotItCount => _items.where((item) => item.gotIt).length;
+
+  // =====================================================================
+  // 3) FUNCTIONS / EVENT HANDLERS -> tanang navigation ug business logic
+  //    dinhi ibutang, DILI sa build(). Kung naay pagbag-o sa data,
+  //    i-balot ang setState(() { ... }) para mag-rebuild ang screen.
+  // =====================================================================
 
   // Every mutation of the list or of an item happens inside setState(),
   // so Flutter rebuilds the screen with the new values.
@@ -118,8 +140,34 @@ class _CartScreenState extends State<CartScreen> {
     });
   }
 
+  // =====================================================================
+  // 4) NAVIGATION -> ibutang dinhi ang mga function nga mu-adto og laing
+  //    screen. Ayaw ebutang ang Navigator.push sa sulod sa build().
+  // =====================================================================
+
+  // Example: open a detail screen for one item, then balik gamit ang pop.
+  //
+  // void _openDetail(int index) {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(builder: (_) => ItemDetailScreen(item: _items[index])),
+  //   );
+  // }
+  //
+  // void _goBack() => Navigator.pop(context);   // balik sa una nga screen
+  //
+  // Tungod kay ang _items naa sa State, ang result gikan sa next screen
+  // mahimo'ng i-apply dinhi sa didto:
+  //
+  // final updated = await Navigator.push(...);
+  // if (updated != null) setState(() => _items[index] = updated);
+
   @override
   Widget build(BuildContext context) {
+    // ===================================================================
+    // 5) BUILD -> UI layout lang dinhi. Ang mga buton i-link lang ngadto sa
+    //    functions sa ibabaw gamit ang onPressed: _imongFunction.
+    // ===================================================================
     return Scaffold(
       appBar: AppBar(title: const Text('Mini Shopping Cart')),
       body: SafeArea(
@@ -217,6 +265,12 @@ class _CartScreenState extends State<CartScreen> {
 
 /// Stateless child widget: it only renders the data it is given and
 /// forwards button presses through callbacks. It never calls setState().
+///
+/// Navigation: KUNG ang tile mismo mu-click para muadto og detail screen,
+/// idugang og usa pa ka callback dinhi (e.g. final VoidCallback onTap;)
+/// unya i-pass gikan sa parent:
+///   onTap: () => _openDetail(index),
+/// Ang Navigator.context naa gihapon sa parent — ang tile mag-report lang.
 class CartItemTile extends StatelessWidget {
   const CartItemTile({
     super.key,
